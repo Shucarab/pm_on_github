@@ -1,0 +1,67 @@
+App.js:
+
+import React, { useState, useEffect } from 'react';
+import Flow from './Flow';
+import { parse } from 'papaparse';
+
+const App = () => {
+  // データフローダイアグラムを構成するエレメントの状態を管理する
+  const [elements, setElements] = useState([]);
+  // アップロードされたCSVファイルの状態を管理する
+  const [file, setFile] = useState(null);
+
+  // ファイルが変更されたときに実行する処理
+  useEffect(() => {
+    if (file) {
+      // PapaParseを使用してCSVファイルをパースする
+      parse(file, {
+        header: true,
+        complete: ({ data }) => {
+          const elements = data.map((row) => ({
+            id: row.ID,
+            type: 'default',
+            position: { x: row.X, y: row.Y },
+            data: { label: row.LABEL },
+          }));
+          setElements(elements);
+        },
+      });
+    }
+  }, [file]);
+
+  // ファイルがアップロードされたときに実行する処理
+  const onUpload = (e) => {
+    const file = e.target.files[0];
+    setFile(file);
+  };
+
+  return (
+    <div>
+      {/* CSVファイルをアップロードするためのフォーム */}
+      <input type="file" accept=".csv" onChange={onUpload} />
+      {/* データフローダイアグラムを表示する */}
+      <Flow elements={elements} />
+    </div>
+  );
+};
+
+export default App;
+
+
+Flow.js:
+import ReactFlow from 'react-flow-renderer';
+
+const Flow = ({ elements }) => {
+  // データフローダイアグラムが読み込まれたときに実行する処理
+  const onLoad = (reactFlowInstance) => reactFlowInstance.fitView();
+
+  return (
+    <div style={{ height: '90vh' }}>
+      {/* React Flowコンポーネントを表示する */}
+      <ReactFlow elements={elements} onLoad={onLoad} />
+    </div>
+  );
+};
+
+export default Flow;
+
