@@ -1,0 +1,156 @@
+dataflow/
+  |- public/
+  |   |- index.html
+  |
+  |- src/
+  |   |- App.js
+  |   |- index.js
+  |   |- components/
+  |       |- FlowChart.js
+  |
+  |- data/
+      |- dataflow.csv
+
+public/index.html: アプリケーションのエントリーポイントであるHTMLファイルです。
+src/App.js: アプリケーションのメインコンポーネントです。
+src/index.js: アプリケーションのエントリーポイントとなるJavaScriptファイルです。
+src/components/FlowChart.js: フローチャートを描画するためのコンポーネントです。
+data/dataflow.csv: サンプルのCSVファイルです。
+まず、public/index.htmlに以下のようなコードを記述します。
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Data Flow Chart</title>
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
+
+次に、src/App.jsに以下のようなコードを記述します。ここでは、React Flowを使ってフローチャートを描画するためのコンポーネントFlowChartを呼び出しています。
+import FlowChart from "./components/FlowChart";
+
+function App() {
+  return (
+    <div className="App">
+      <FlowChart />
+    </div>
+  );
+}
+
+export default App;
+
+次に、src/components/FlowChart.jsに以下のようなコードを記述します。ここでは、CSVファイルからデータを読み込み、React Flowを使ってフローチャートを描画しています。
+import { useState, useEffect } from "react";
+import ReactFlow, {
+  removeElements,
+  addEdge,
+  MiniMap,
+  Controls,
+  Background,
+} from "react-flow-renderer";
+import Papa from "papaparse";
+
+const initialElements = [];
+
+const FlowChart = () => {
+  const [elements, setElements] = useState(initialElements);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch("/data/dataflow.csv");
+      const reader = response.body.getReader();
+      const result = await reader.read(); // Read the entire stream
+      const decoder = new TextDecoder("utf-8");
+      const csvData = decoder.decode(result.value);
+
+      // Convert CSV data to JSON
+      const parsedData = Papa.parse(csvData, { header: true }).data;
+      const nodeMap = new Map();
+
+      // Generate nodes
+      const nodes = parsedData.map((data) => {
+        const { ID, IF名 } = data;
+        const node = {
+          id: ID,
+          type: "default",
+          position: {
+            x: 0,
+            y: 0,
+          },
+          data: {
+            label: IF名,
+            ...data,
+          },
+        };
+        nodeMap.set
+
+
+CSVファイルをアップロードすると、PapaParseを使ってCSVファイルをパースして、データフローダイアグラムを作成することができます。
+import React, { useState, useEffect } from 'react';
+import Flow from './Flow';
+import { parse } from 'papaparse';
+
+const App = () => {
+  const [elements, setElements] = useState([]);
+  const [file, setFile] = useState(null);
+
+  useEffect(() => {
+    if (file) {
+      parse(file, {
+        header: true,
+        complete: ({ data }) => {
+          const elements = data.map((row) => ({
+            id: row.ID,
+            type: 'default',
+            position: { x: row.X, y: row.Y },
+            data: { label: row.LABEL },
+          }));
+          setElements(elements);
+        },
+      });
+    }
+  }, [file]);
+
+  const onUpload = (e) => {
+    const file = e.target.files[0];
+    setFile(file);
+  };
+
+  return (
+    <div>
+      <input type="file" accept=".csv" onChange={onUpload} />
+      <Flow elements={elements} />
+    </div>
+  );
+};
+
+export default App;
+
+
+このアプリケーションでは、アップロードされたCSVファイルのヘッダーは以下の通りです
+ID,X,Y,LABEL
+
+また、作成された要素のidはCSVファイルのIDフィールドの値になります。
+
+Flowコンポーネントは、React FlowパッケージのReactFlowコンポーネントを使って作成されています。
+import ReactFlow from 'react-flow-renderer';
+
+const Flow = ({ elements }) => {
+  const onLoad = (reactFlowInstance) => reactFlowInstance.fitView();
+
+  return (
+    <div style={{ height: '90vh' }}>
+      <ReactFlow elements={elements} onLoad={onLoad} />
+    </div>
+  );
+};
+
+export default Flow;
+
+
+
+
